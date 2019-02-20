@@ -3,8 +3,9 @@ from datetime import datetime
 from typing import Optional, Union
 
 import discord
-from dateutil import parser
 from discord.ext import commands
+
+from dateutil import parser
 from natural.date import duration
 
 from core import checks
@@ -193,8 +194,8 @@ class Modmail:
         - `close silently`
         - `close in 10m silently`
 
-        Cancel closing a thread:
-        - close cancel
+        Stop a thread from closing:
+        - `close cancel`
         """
 
         thread = ctx.thread
@@ -601,19 +602,31 @@ class Modmail:
     async def contact(self, ctx,
                       category: Optional[discord.CategoryChannel] = None, *,
                       user: Union[discord.Member, discord.User]):
-        """Create a thread with a specified member."""
+        """Create a thread with a specified member.
+        
+        If the optional category argument is passed, the thread
+        will be created in the specified category.
+        """
+
+        if user.bot:
+            embed = discord.Embed(
+                color=discord.Color.red(),
+                description='Cannot start a thread with a bot.'
+            )
+            return await ctx.send(embed=embed)
 
         exists = await self.bot.threads.find(recipient=user)
         if exists:
             embed = discord.Embed(
                 color=discord.Color.red(),
                 description='A thread for this user already '
-                f'exists in {exists.channel.mention}.'
+                            f'exists in {exists.channel.mention}.'
             )
 
         else:
-            thread = await self.bot.threads.create(user, creator=ctx.author,
-                                                   category=category)
+            thread = self.bot.threads.create(user, creator=ctx.author,
+                                             category=category)
+            await thread.wait_until_ready()
             embed = discord.Embed(
                 title='Created thread',
                 description=f'Thread started in {thread.channel.mention} '
@@ -621,7 +634,7 @@ class Modmail:
                 color=self.bot.main_color
             )
 
-        return await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     @trigger_typing

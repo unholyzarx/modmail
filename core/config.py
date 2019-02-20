@@ -13,39 +13,38 @@ class ConfigManager(ConfigManagerABC):
         'twitch_url',
         # bot settings
         'main_category_id', 'disable_autoupdates', 'prefix', 'mention',
-        'main_color',
+        'main_color', 'user_typing', 'mod_typing',
         # logging
         'log_channel_id',
         # threads
         'sent_emoji', 'blocked_emoji', 'thread_creation_response',
         # moderation
-        'recipient_color', 'mod_tag', 'mod_color'
+        'recipient_color', 'mod_tag', 'mod_color',
         # anonymous message
         'anon_username', 'anon_avatar_url', 'anon_tag'
     }
 
     internal_keys = {
-        # activity
-        'activity_message', 'activity_type',
+        # bot presence
+        'activity_message', 'activity_type', 'status',
         # moderation
         'blocked',
         # threads
         'snippets', 'notification_squad', 'subscriptions', 'closures',
-        # commands
-        'aliases'
+        # misc
+        'aliases', 'plugins'
     }
 
     protected_keys = {
         # Modmail
         'modmail_api_token', 'modmail_guild_id', 'guild_id', 'owners',
-        # logs
-        'log_url',
-        # database
-        'mongo_uri',
+        'log_url', 'mongo_uri',
         # bot
         'token',
         # GitHub
-        'github_access_token'
+        'github_access_token',
+        # Logging
+        'log_level'
     }
 
     colors = {
@@ -82,11 +81,13 @@ class ConfigManager(ConfigManagerABC):
     def populate_cache(self):
         data = {
             'snippets': {},
+            'plugins': [],
             'aliases': {},
             'blocked': {},
             'notification_squad': {},
             'subscriptions': {},
             'closures': {},
+            'log_level': 'INFO'
         }
 
         data.update(os.environ)

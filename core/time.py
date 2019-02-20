@@ -3,12 +3,18 @@ UserFriendlyTime by Rapptz
 Source:
 https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/utils/time.py
 """
+import logging
 import re
 from datetime import datetime
 
+from discord.ext.commands import BadArgument, Converter
+
 import parsedatetime as pdt
 from dateutil.relativedelta import relativedelta
-from discord.ext.commands import BadArgument, Converter
+
+from core.utils import error
+
+logger = logging.getLogger('Modmail')
 
 
 class ShortTime:
@@ -31,6 +37,10 @@ class ShortTime:
         now = datetime.utcnow()
         self.dt = now + relativedelta(**data)
 
+# Monkey patch mins and secs into the units
+units = pdt.pdtLocales['en_US'].units
+units['minutes'].append('mins')
+units['seconds'].append('secs')
 
 class HumanTime:
     calendar = pdt.Calendar(version=pdt.VERSION_CONTEXT_STYLE)
@@ -176,8 +186,9 @@ class UserFriendlyTime(Converter):
 
             return await self.check_constraints(ctx, now, remaining)
         except Exception:
-            import traceback
-            traceback.print_exc()
+            logger.exception(
+                error('Something went wrong while parsing the time')
+            )
             raise
 
 

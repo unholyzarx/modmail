@@ -1,13 +1,18 @@
+import logging
 import secrets
 from datetime import datetime
 from json import JSONDecodeError
 from typing import Union, Optional
 
-from aiohttp import ClientResponseError, ClientResponse
 from discord import Member, DMChannel
 from discord.ext import commands
 
+from aiohttp import ClientResponseError, ClientResponse
+
 from core.models import Bot, UserClient
+from core.utils import info
+
+logger = logging.getLogger('Modmail')
 
 
 class ApiClient:
@@ -242,7 +247,7 @@ class GitHub(ApiClient):
         self.username: str = resp['login']
         self.avatar_url: str = resp['avatar_url']
         self.url: str = resp['html_url']
-        print(f'Logged in to: {self.username}')
+        logger.info(info(f'GitHub logged in to: {self.username}'))
         return self
 
 
@@ -533,3 +538,12 @@ class SelfHostedClient(UserClient, ApiClient):
                 'url': user.url
             }
         }
+
+
+class PluginDatabaseClient:
+    def __init__(self, bot: Bot):
+        self.bot = bot
+
+    def get_partition(self, cog):
+        cls_name = cog.__class__.__name__
+        return self.bot.db.plugins[cls_name]

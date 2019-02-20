@@ -5,6 +5,26 @@ from urllib import parse
 from discord import Object
 from discord.ext import commands
 
+from colorama import Fore, Style
+
+
+class SafeDict(dict):
+    def __missing__(self, key):
+        return '{' + key + '}'
+
+
+def safeformat(s, **kwargs):
+    replacements = SafeDict(**kwargs)
+    return s.format_map(replacements)
+
+
+def info(*msgs):
+    return f'{Fore.CYAN}{" ".join(msgs)}{Style.RESET_ALL}'
+
+
+def error(*msgs):
+    return f'{Fore.RED}{" ".join(msgs)}{Style.RESET_ALL}'
+
 
 class User(commands.IDConverter):
     """
@@ -175,3 +195,10 @@ def match_user_id(text: str) -> int:
     if match is not None:
         return int(match.group(1))
     return -1
+
+
+async def ignore(coro):
+    try:
+        await coro
+    except Exception:
+        pass
